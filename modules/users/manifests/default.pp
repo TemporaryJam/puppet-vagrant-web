@@ -1,12 +1,13 @@
 class users::default {
 
   group {'eharth': ensure => 'present'}
+  group {'wwweditors': ensure => 'present'}
 
   user {'eharth':
     home       => '/home/eharth',
     ensure     => 'present',
     gid        => 'eharth',
-    groups     => 'wheel',
+    groups     => [wheel, wwweditors],
     comment    => 'Eric',
     password   => 'BOGUS_HASH',
     managehome => true,

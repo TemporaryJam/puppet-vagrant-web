@@ -7,6 +7,10 @@ class nginx::config {
     source => 'puppet:///modules/nginx/nginx.conf',
   }
 
+  user { 'nginx':
+    groups => 'wwweditors',
+   }
+
   # This directory is managed under puppet.
   # Any files or directories in this directory
   # and not managed by puppet are removed.

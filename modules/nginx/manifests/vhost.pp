@@ -14,7 +14,7 @@ define nginx::vhost($ip = '*', $port = '80') {
   file {"/var/www/vhosts/${name}":
     ensure => 'directory',
     owner  => 'nginx',
-    group  => 'nginx',
-    mode   => '0755',
+    group  => 'wwweditors',
+    mode   => '2775',
   }
 }
