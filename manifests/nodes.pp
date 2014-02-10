@@ -1,6 +1,10 @@
 node 'web' {
   include base
+  
   include yum
+  yum::repo { 'nginx' :
+    baseurl => 'http://nginx.org/packages/centos/6/$basearch/',
+  }
   include nginx
   nginx::vhost {'test':}
 

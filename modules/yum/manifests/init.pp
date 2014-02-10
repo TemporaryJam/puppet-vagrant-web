@@ -1,5 +1,4 @@
 class yum {
-  include yum::makecache, yum::repo
-
+  include yum::makecache
 	
 }
