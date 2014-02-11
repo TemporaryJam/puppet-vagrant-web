@@ -1,3 +1,3 @@
 #!/bin/bash
 
-puppet apply --debug --verbose --modulepath=/home/eharth/puppet/modules site.pp
+puppet apply --debug --verbose --modulepath=modules site.pp

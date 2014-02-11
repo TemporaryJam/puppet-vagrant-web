@@ -2,9 +2,9 @@ node 'web' {
   include base
   
   include yum
-  yum::repo { 'nginx' :
-    baseurl => 'http://nginx.org/packages/centos/6/$basearch/',
-  }
+  #yum::repo { 'nginx' :
+  #  baseurl => 'http://nginx.org/packages/centos/6/$basearch/',
+  #}
   include nginx
   nginx::vhost {'test':}
 
@@ -16,4 +16,6 @@ node 'web' {
     ip   => '127.0.0.1',
     port => '81',
   }
+  
+  include mysql::server
 }

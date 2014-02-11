@@ -1,0 +1,4 @@
+puppet-sheepy
+version2
+*.rpm
+vagrant-puppet-centos-php-apache

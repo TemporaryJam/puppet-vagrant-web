@@ -1,6 +1,6 @@
 class nginx {
   # Include the sub classes
-  include nginx::install, nginx::config, nginx::service
+  include nginx::repo, nginx::install, nginx::config, nginx::service
 
   # Define dependencies:
   # * Install should run first
@@ -8,5 +8,5 @@ class nginx {
   # * ... and should trigger Service on change
   #
   # This means nginx will be reloaded on any config changes
-  Class['nginx::install'] -> Class['nginx::config'] ~> Class['nginx::service']
+  Class['nginx::repo'] -> Class['nginx::install'] -> Class['nginx::config'] ~> Class['nginx::service']
 }
