@@ -14,10 +14,4 @@ Puppet::Type.newtype(:database) do
     newvalue(/^\S+$/)
   end
 
-  newproperty(:collation) do
-    desc "The collation to use for a database"
-    defaultto :utf8_unicode_ci
-    newvalue(/^\S+$/)
-  end
-
 end

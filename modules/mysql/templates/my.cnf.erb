@@ -1,55 +1,47 @@
-[mysql]
-# CLIENT #
-port                           = 3306
-
+[client]
+port    = <%= port %>
+socket    = <%= socket %>
+[mysqld_safe]
+socket    = <%= socket %>
+nice    = 0
 [mysqld]
-# GENERAL #
-bind-address                   = 0.0.0.0
-port                           = 3306
-user                           = mysql
-default-storage-engine         = InnoDB
+user    = mysql
+pid-file  = <%= pidfile %>
+socket    = <%= socket %>
+port      = <%= port %>
+basedir   = <%= basedir %>
+datadir   = <%= datadir %>
+tmpdir    = /tmp
+skip-external-locking
 
-# MyISAM #
-key-buffer-size                = 32M
-myisam-recover                 = FORCE,BACKUP
+<% if bind_address %>
+bind-address    = <%= bind_address %>
+<% end %> 
 
-# SAFETY #
-max-allowed-packet             = 16M
-max-connect-errors             = 1000000
-skip-name-resolve
-sysdate-is-now                 = 1
-innodb                         = FORCE
-innodb-strict-mode             = 1
+key_buffer         = 16M
+max_allowed_packet = 16M
+thread_stack       = 192K
+thread_cache_size  = 8
+myisam-recover     = BACKUP
+query_cache_limit  = 1M
+query_cache_size   = 16M
+log_error          = <%= log_error %>
+expire_logs_days   = 10
+max_binlog_size    = 100M
+<% if default_engine != 'UNSET' %>
+default-storage-engine = <%= default_engine %>
+<% end %>
+<% if ssl == true %>
+ssl-ca    = <%= ssl_ca %>
+ssl-cert  = <%= ssl_cert %>
+ssl-key   = <%= ssl_key %>
+<% end %>
 
-# DATA STORAGE #
-datadir                        = /var/lib/mysql/
-
-# BINARY LOGGING #
-log-bin                        = /var/lib/mysql/mysql-bin
-expire-logs-days               = 14
-sync-binlog                    = 1
-
-# CACHES AND LIMITS #
-tmp-table-size                 = 32M
-max-heap-table-size            = 32M
-query-cache-type               = 0
-query-cache-size               = 0
-max-connections                = 500
-thread-cache-size              = 50
-open-files-limit               = 65535
-table-definition-cache         = 1024
-table-open-cache               = 2048
-
-# INNODB #
-innodb-flush-method            = O_DIRECT
-innodb-log-files-in-group      = 2
-innodb-log-file-size           = 64M
-innodb-flush-log-at-trx-commit = 1
-innodb-file-per-table          = 1
-innodb-buffer-pool-size        = 256M
-
-# LOGGING #
-log-error                      = /var/log/mysql/mysql-error.log
-log-queries-not-using-indexes  = 1
-slow-query-log                 = 1
-slow-query-log-file            = /var/log/mysql/mysql-slow.log
+[mysqldump]
+quick
+quote-names
+max_allowed_packet = 16M
+[mysql]
+[isamchk]
+key_buffer    = 16M
+!includedir /etc/mysql/conf.d/

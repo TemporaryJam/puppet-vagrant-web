@@ -1,33 +1,111 @@
-# == Class: mysql::server::config
+# Creates a my.cnf like config file in the conf.d/ directory.
 #
-# Sets a random password for the root user if one isn't already set and
-# saves it to /root/.my.cnf
+# IMPORTANT: this should be used AFTER the inclusion of
+#            mysql::server because it needs some variables
+#            out of the mysql::config class which will be
+#            included!
 #
-# Also sets up managing of /etc/mysql/conf.d for configuration snippets
-# which can be in addition to or override what ever is in the main config.
+# == Parameters:
 #
-class mysql::server::config {
+# - name: is the name of the file
+# - notify_service: whether to notify the mysql daemon or not (default: true)
+# - settings: either a string which should be the content of the file
+#     or a hash with the following structure
+#
+#     section => {
+#       <key> => <value>,
+#       ...
+#     },
+#     ...
+#
+#   +section+ means all these sections you can set in
+#             an configuration file like +mysqld+, +client+,
+#             +mysqldump+ and so on
+#   +key+ has to be a valid property which you can set like
+#         +datadir+, +socket+ or even flags like +read-only+
+#
+#   +value+ can be
+#     a) a string as the value
+#     b) +true+ or +false+ to set a flag like 'read-only' or leave
+#        it out (+false+ means, nothing will be done)
+#     c) an array of values which can be of type a) and/or b)
+#
+#
+# == Examples:
+#
+#   Easy one:
+#
+#   mysql::server::config { 'basic_config':
+#     settings => "[mysqld]\nskip-external-locking\n"
+#   }
+#
+#   This will create the file /etc/mysql/conf.d/basic_config.cnf with
+#   the following content:
+#
+#   [mysqld]
+#   skip-external-locking
+#
+#
+#   More complex example:
+#
+#   mysql::server::config { 'basic_config':
+#     settings => {
+#       'mysqld' => {
+#         'query_cache_limit'     => '5M',
+#         'query_cache_size'      => '128M',
+#         'port'                  => 3300,
+#         'skip-external-locking' => true,
+#         'replicate-ignore-db'   => [
+#           'tmp_table',
+#           'whateveryouwant'
+#         ]
+#       },
+#
+#       'client' => {
+#         'port' => 3300
+#       }
+#     }
+#   }
+#
+#   This will create the file /etc/mysql/conf.d/basic_config.cnf with
+#   the following content:
+#
+#   [mysqld]
+#   query_cache_limit = 5M
+#   query_cache_size = 128M
+#   port = 3300
+#   skip-external-locking
+#   replicate-ignore-db = tmp_table
+#   replicate-ignore-db = whateveryouwant
+#
+#   [client]
+#   port = 3300
+#
+define mysql::server::config (
+  $settings,
+  $notify_service = true
+) {
+  include mysql::config
 
-  # We generate a random root password if one one already isn't set
-  $root_password = mysql_gen_password()
-
-  exec {'set_mysql_root_password':
-    command => "mysqladmin -u root password '${root_password}'",
-    unless  => "mysqladmin -u root -p'${root_password}' status > /dev/null",
-    creates => '/root/.my.cnf', # Don't run if this file exists
+  if is_hash($settings) {
+    $content = template('mysql/my.conf.cnf.erb')
+  } else {
+    $content = $settings
   }
 
-  file { '/root/.my.cnf':
-    content => template('mysql/my.cnf.pass.erb'),
-    require => Exec['set_mysql_root_password'],
-    replace => false, # Do not replace if already exists
+  file { "/etc/mysql/conf.d/${name}.cnf":
+    ensure  => file,
+    content => $content,
+    owner   => 'root',
+    group   => $mysql::config::root_group,
+    mode    => '0644',
+    require => Package['mysql-server'],
   }
 
-  # We manage everything in /etc/mysql/conf.d:
-  file { '/etc/mysql/conf.d':
-    ensure  => 'directory',
-    mode    => '0755',
-    purge   => true, # Purge any files that are not managed by resources
-    recurse => true,
+  if $notify_service {
+    File["/etc/mysql/conf.d/${name}.cnf"] {
+      # XXX notifying the Service gives us a dependency circle but I don't understand why
+      notify => Exec['mysqld-restart']
+    }
   }
 }
